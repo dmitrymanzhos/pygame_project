@@ -61,27 +61,6 @@ class Board:
         self.top = top
         self.cell_size = cell_size
 
-    def render(self, screen):
-        self.screen = screen
-        for i in range(self.height):
-            for j in range(self.width):
-                color = pygame.Color('white')
-                pygame.draw.rect(screen, color, (self.cell_size * j + self.left,
-                                 self.cell_size * i + self.top,
-                                                 self.cell_size,
-                                                 self.cell_size), width=1)
-
-                if self.board[i][j] == 10:
-                    color = pygame.Color('red')
-                    pygame.draw.rect(screen, color, (self.cell_size * j + self.left + 1,
-                                     self.cell_size * i + self.top + 1, self.cell_size - 2, self.cell_size - 2))
-
-                elif self.board[i][j] != -1:
-                    font = pygame.font.Font(None, 30)
-                    text = font.render(str(self.board[i][j]), True, (10, 255, 0))
-                    screen.blit(text, (self.cell_size * j + self.left + 1,
-                                       self.cell_size * i + self.top + 1))
-
     def get_cell(self, x, y):
         if x < self.left or y < self.top:
             return None
@@ -102,15 +81,8 @@ class Board:
                         if self.cell_size * i + self.top <= y <= self.cell_size * (i + 1) + self.top:
                             return j, i
 
-    def get_click(self, mouse_pos):
-        cell = self.get_cell(mouse_pos)
-        self.on_click(cell)
-
-    def on_click(self, cell):
-        pass
-
     def find_distanse(self, cell, x, y):
-        return((self.cell_size * (cell[0] + 0.5) - x) ** 2 + (self.cell_size * (cell[1] + 0.5) - y) ** 2) ** 0.5
+        return ((self.cell_size * (cell[0] + 0.5) - x) ** 2 + (self.cell_size * (cell[1] + 0.5) - y) ** 2) ** 0.5
 
 
 def start_screen():
@@ -183,6 +155,7 @@ def start(lvl_num=1):
     if lvl_num == 1:
         level = Level('level1.txt', 500, 350, None)
         print(level.board)
+        print(level.player.rect)
         level.play(screen)
 
 
@@ -206,7 +179,6 @@ def rules():
         screen.blit(string_rendered, intro_rect)
 
     pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (850, 10, 140, 50), width=3)
-    # font = pygame.font.Font(None, 50)
     text = font.render('Назад', True, (150, 150, 150))
     screen.blit(text, (890, 27))
 
@@ -264,6 +236,9 @@ class Player(pygame.sprite.Sprite):
                 self.frames.append(sheet.subsurface(pygame.Rect(
                     frame_location, self.rect.size)))
 
+    def update(self):
+        self.image = pygame.transform.scale(self.image, (20, 20))
+
 
 class Camera:
     def __init__(self, dx, dy):
@@ -315,13 +290,15 @@ class Level(Board):
                             return True
                 if side == '2':
                     if '2' in self.board[self.player.cell[1]][self.player.cell[0]]:
-                        if self.player.rect.y + self.player.rect.h == (self.player.cell[1] + 1) * self.cell_size + self.top:
+                        if self.player.rect.y + self.player.rect.h == \
+                                (self.player.cell[1] + 1) * self.cell_size + self.top:
                             return False
                         else:
                             return True
                 if side == '6':
                     if '6' in self.board[self.player.cell[1]][self.player.cell[0]]:
-                        if self.player.rect.x + self.player.rect.w == (self.player.cell[0] + 1) * self.cell_size + self.left:
+                        if self.player.rect.x + self.player.rect.w == \
+                                (self.player.cell[0] + 1) * self.cell_size + self.left:
                             return False
                         else:
                             return True
@@ -331,6 +308,7 @@ class Level(Board):
         self.screen = screen
         self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
                                          self.player.rect.y + 0.5 * self.player.rect.h)
+        all_sprites.add(self.player)
         print(self.player.cell)
         print('started')
         running = True
@@ -341,6 +319,7 @@ class Level(Board):
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    print(self.al)
                     terminate()
                 elif event.type == pygame.MOUSEMOTION:
                     pass
@@ -371,26 +350,29 @@ class Level(Board):
                 if self.check_if_available('8'):
                     self.player.rect.y -= self.player.v
                     self.player.image = self.player.frames[10]
+                    self.player.update()
             if a_pushed:
                 if self.check_if_available('4'):
                     self.player.rect.x -= self.player.v
                     self.player.image = self.player.frames[4]
+                    self.player.update()
             if s_pushed:
                 if self.check_if_available('2'):
                     self.player.rect.y += self.player.v
                     self.player.image = self.player.frames[1]
+                    self.player.update()
             if d_pushed:
                 if self.check_if_available('6'):
                     self.player.rect.x += self.player.v
                     self.player.image = self.player.frames[7]
+                    self.player.update()
 
             self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
                                              self.player.rect.y + 0.5 * self.player.rect.h)
-            print(self.player.cell)
+            # print(self.player.cell)
 
             fl = pygame.transform.scale(load_image('floor1.png'), (self.cell_size, self.cell_size))
             self.screen.fill(pygame.Color(0, 0, 0))
-            # pygame.draw.rect(self.screen, pygame.Color('red'), (0, 0, 200, 200))
             for i in range(len(self.board[0])):
                 for j in range(len(self.board)):
                     if self.find_distanse((i, j), self.player.rect.x + 0.5 * self.player.rect.w,
@@ -407,14 +389,13 @@ class Level(Board):
                                              (self.cell_size * (i + 1) + self.left,
                                               self.cell_size * (j + 1) + self.top),
                                              width=3)
-                            if (self.cell_size * i + self.left,
-                                self.cell_size * (j + 1) + self.top,
+                            if (self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top,
                                 self.cell_size * (i + 1) + self.left,
                                 self.cell_size * (j + 1) + self.top) not in self.al:
-                                    self.al.append((self.cell_size * i + self.left,
-                                                    self.cell_size * (j + 1) + self.top,
-                                                    self.cell_size * (i + 1) + self.left,
-                                                    self.cell_size * (j + 1) + self.top))
+                                self.al.append((self.cell_size * i + self.left,
+                                                self.cell_size * (j + 1) + self.top,
+                                                self.cell_size * (i + 1) + self.left,
+                                                self.cell_size * (j + 1) + self.top))
 
                         if '6' in self.board[j][i]:
                             pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
@@ -422,22 +403,39 @@ class Level(Board):
                                              (self.cell_size * (i + 1) + self.left,
                                               self.cell_size * (j + 1) + self.top),
                                              width=3)
+                            if (self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top,
+                                self.cell_size * (i + 1) + self.left,
+                                self.cell_size * (j + 1) + self.top) not in self.al:
+                                self.al.append((self.cell_size * (i + 1) + self.left,
+                                                self.cell_size * j + self.top,
+                                                self.cell_size * (i + 1) + self.left,
+                                                self.cell_size * (j + 1) + self.top))
 
                         if '4' in self.board[j][i]:
                             pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
                                              (self.cell_size * i + self.left, self.cell_size * j + self.top),
                                              (self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top),
                                              width=3)
+                            if (self.cell_size * i + self.left, self.cell_size * j + self.top,
+                                self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top) not in self.al:
+                                self.al.append((self.cell_size * i + self.left, self.cell_size * j + self.top,
+                                self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top))
 
                         if '8' in self.board[j][i]:
                             pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
                                              (self.cell_size * i + self.left, self.cell_size * j + self.top),
                                              (self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top),
                                              width=3)
+                            if (self.cell_size * i + self.left, self.cell_size * j + self.top,
+                                self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top) not in self.al:
+                                self.al.append((self.cell_size * i + self.left, self.cell_size * j + self.top,
+                                                self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top))
 
             # self.render(screen)
-            self.screen.blit(pygame.transform.scale(self.player.image, (30, 30)),
-                             (self.player.rect.x, self.player.rect.y))
+
+            # self.screen.blit(pygame.transform.scale(self.player.image, (30, 30)),
+            #                  (self.player.rect.x, self.player.rect.y))
+            all_sprites.draw(self.screen)
 
             pygame.display.flip()
             clock.tick(FPS)
