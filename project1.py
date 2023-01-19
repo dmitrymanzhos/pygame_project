@@ -276,32 +276,54 @@ class Level(Board):
                                          self.player.rect.y + 0.5 * self.player.rect.h)
         if self.player.cell:
             if self.player.cell[1] != 0 or self.player.cell[1] != len(self.board):
-                if side == '8':
-                    if '8' in self.board[self.player.cell[1]][self.player.cell[0]]:
-                        if self.player.rect.y == self.player.cell[1] * self.cell_size + self.top:
-                            return False
-                        else:
-                            return True
-                if side == '4':
-                    if '4' in self.board[self.player.cell[1]][self.player.cell[0]]:
-                        if self.player.rect.x == self.player.cell[0] * self.cell_size + self.left:
-                            return False
-                        else:
-                            return True
-                if side == '2':
-                    if '2' in self.board[self.player.cell[1]][self.player.cell[0]]:
-                        if self.player.rect.y + self.player.rect.h == \
-                                (self.player.cell[1] + 1) * self.cell_size + self.top:
-                            return False
-                        else:
-                            return True
-                if side == '6':
-                    if '6' in self.board[self.player.cell[1]][self.player.cell[0]]:
-                        if self.player.rect.x + self.player.rect.w == \
-                                (self.player.cell[0] + 1) * self.cell_size + self.left:
-                            return False
-                        else:
-                            return True
+                for el in self.al:
+                    if side == '8':
+                        if '8' in self.board[self.player.cell[1]][self.player.cell[0]]:
+                            if self.player.rect.y == self.player.cell[1] * self.cell_size + self.top:
+                                return False
+                        if self.player.rect.y == el[3]:
+                            if self.player.rect.x < el[0] == el[2] < self.player.rect.x + self.player.rect.w:
+                                return False
+                            elif el[0] < self.player.rect.x < el[2] or \
+                                    el[0] < self.player.rect.x + self.player.rect.w < el[2]:
+                                return False
+
+                    if side == '4':
+                        if '4' in self.board[self.player.cell[1]][self.player.cell[0]]:
+                            if self.player.rect.x == self.player.cell[0] * self.cell_size + self.left:
+                                return False
+                        if self.player.rect.x == el[2]:
+                            if self.player.rect.y < el[1] == el[3] < self.player.rect.y + self.player.rect.h:
+                                return False
+                            elif el[1] < self.player.rect.y < el[3] or \
+                                    el[1] < self.player.rect.y + self.player.rect.h < el[3]:
+                                return False
+
+                    if side == '2':
+                        if '2' in self.board[self.player.cell[1]][self.player.cell[0]]:
+                            if self.player.rect.y + self.player.rect.h == \
+                                    (self.player.cell[1] + 1) * self.cell_size + self.top:
+                                return False
+                        if self.player.rect.y + self.player.rect.h == el[1]:
+                            if self.player.rect.x < el[0] == el[2] < self.player.rect.x + self.player.rect.w:
+                                return False
+                            elif el[0] < self.player.rect.x < el[2] or \
+                                    el[0] < self.player.rect.x + self.player.rect.w < el[2]:
+                                return False
+
+                    if side == '6':
+                        if '6' in self.board[self.player.cell[1]][self.player.cell[0]]:
+                            if self.player.rect.x + self.player.rect.w == \
+                                    (self.player.cell[0] + 1) * self.cell_size + self.left:
+                                return False
+                            else:
+                                return True
+                        if self.player.rect.x + self.player.rect.w == el[0]:
+                            if self.player.rect.y < el[1] == el[3] < self.player.rect.y + self.player.rect.h:
+                                return False
+                            elif el[1] < self.player.rect.y < el[3] or \
+                                    el[1] < self.player.rect.y + self.player.rect.h < el[3]:
+                                return False
         return True
 
     def play(self, screen):
@@ -369,7 +391,6 @@ class Level(Board):
 
             self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
                                              self.player.rect.y + 0.5 * self.player.rect.h)
-            # print(self.player.cell)
 
             fl = pygame.transform.scale(load_image('floor1.png'), (self.cell_size, self.cell_size))
             self.screen.fill(pygame.Color(0, 0, 0))
@@ -419,7 +440,7 @@ class Level(Board):
                             if (self.cell_size * i + self.left, self.cell_size * j + self.top,
                                 self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top) not in self.al:
                                 self.al.append((self.cell_size * i + self.left, self.cell_size * j + self.top,
-                                self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top))
+                                                self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top))
 
                         if '8' in self.board[j][i]:
                             pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
@@ -431,10 +452,6 @@ class Level(Board):
                                 self.al.append((self.cell_size * i + self.left, self.cell_size * j + self.top,
                                                 self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top))
 
-            # self.render(screen)
-
-            # self.screen.blit(pygame.transform.scale(self.player.image, (30, 30)),
-            #                  (self.player.rect.x, self.player.rect.y))
             all_sprites.draw(self.screen)
 
             pygame.display.flip()
@@ -442,30 +459,3 @@ class Level(Board):
 
 
 start_screen()
-
-# if __name__ == '__main__':
-#     pygame.init()
-#
-#     mine = Minesweeper(30, 20, 100)
-#     mine.set_view(10, 10, 35)
-#     mine.mine_creator()
-#
-#     size = width, height = mine.width * mine.cell_size + 20, mine.height * mine.cell_size + 20
-#     screen = pygame.display.set_mode(size)
-#
-#     running = True
-#     clock = pygame.time.Clock()
-#     fps = 10
-#     while running:
-#         for event in pygame.event.get():
-#             if event.type == pygame.MOUSEBUTTONDOWN:
-#                 if event.button == 1:
-#                     mine.get_click(event.pos)
-#
-#             if event.type == pygame.QUIT:
-#                 running = False
-#
-#         screen.fill((0, 0, 0))
-#         mine.render(screen)
-#         clock.tick(60)
-#         pygame.display.flip()
