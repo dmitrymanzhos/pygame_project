@@ -54,7 +54,7 @@ class Board:
         self.board = []
         self.left = 10
         self.top = 10
-        self.cell_size = 30
+        self.cell_size = 100
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -153,7 +153,7 @@ def start_screen():
 
 def start(lvl_num=1):
     if lvl_num == 1:
-        level = Level('level1.txt', 500, 350, None)
+        level = Level('level1.txt', 500, 200, None)
         print(level.board)
         print(level.player.rect)
         level.play(screen)
@@ -219,13 +219,12 @@ def choose_level():
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(all_sprites)
-        self.v = 2
+        self.v = 5
         self.frames = []
         self.cut_sheet(pygame.transform.scale(load_image('player1.png', colorkey=-1), (300, 400)), 3, 4)
         self.cur_frame = 1
-        self.image = pygame.transform.scale(self.frames[self.cur_frame], (20, 20))
+        self.image = pygame.transform.scale(self.frames[self.cur_frame], (70, 70))
         self.rect = self.rect.move(100, 100)
-        self.rect.x, self.rect.y = pos_x, pos_y
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
@@ -237,7 +236,7 @@ class Player(pygame.sprite.Sprite):
                     frame_location, self.rect.size)))
 
     def update(self):
-        self.image = pygame.transform.scale(self.image, (20, 20))
+        self.image = pygame.transform.scale(self.image, (70, 70))
 
 
 class Camera:
@@ -263,11 +262,12 @@ class Level(Board):
         self.board = load_level(filename)
         self.player = Player(start_x, start_y)
         self.player.rect = self.player.image.get_rect()
+        self.player.rect.x, self.player.rect.y = start_x, start_y
         self.camera = Camera(start_x, start_y)
         self.time = time
         super().__init__(len(self.board[0]), len(self.board))
         self.board = load_level(filename)
-        self.rad = 100
+        self.rad = 300
         self.al = []
         print(self.board)
 
@@ -409,7 +409,7 @@ class Level(Board):
                                              (self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top),
                                              (self.cell_size * (i + 1) + self.left,
                                               self.cell_size * (j + 1) + self.top),
-                                             width=3)
+                                             width=5)
                             if (self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top,
                                 self.cell_size * (i + 1) + self.left,
                                 self.cell_size * (j + 1) + self.top) not in self.al:
@@ -423,7 +423,7 @@ class Level(Board):
                                              (self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top),
                                              (self.cell_size * (i + 1) + self.left,
                                               self.cell_size * (j + 1) + self.top),
-                                             width=3)
+                                             width=5)
                             if (self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top,
                                 self.cell_size * (i + 1) + self.left,
                                 self.cell_size * (j + 1) + self.top) not in self.al:
@@ -436,7 +436,7 @@ class Level(Board):
                             pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
                                              (self.cell_size * i + self.left, self.cell_size * j + self.top),
                                              (self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top),
-                                             width=3)
+                                             width=5)
                             if (self.cell_size * i + self.left, self.cell_size * j + self.top,
                                 self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top) not in self.al:
                                 self.al.append((self.cell_size * i + self.left, self.cell_size * j + self.top,
@@ -446,7 +446,7 @@ class Level(Board):
                             pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
                                              (self.cell_size * i + self.left, self.cell_size * j + self.top),
                                              (self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top),
-                                             width=3)
+                                             width=5)
                             if (self.cell_size * i + self.left, self.cell_size * j + self.top,
                                 self.cell_size * (i + 1) + self.left, self.cell_size * j + self.top) not in self.al:
                                 self.al.append((self.cell_size * i + self.left, self.cell_size * j + self.top,
