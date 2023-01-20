@@ -39,50 +39,24 @@ def load_level(filename):
     return level_map
 
 
-def try_again():
-    screen.fill((0, 0, 0))
+def success(coins, lvl_num):
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 70)
+    text1 = font.render('Лабиринт пройден', True, (250, 250, 250))
+    screen.blit(text1, (200, 130))
+    text2 = font.render(f"Ваш результат: {coins} монет", True, (250, 250, 250))
+    screen.blit(text2, (200, 200))
+    text3 = font.render('Нажмите в любом месте', True, (200, 200, 200))
+    screen.blit(text3, (200, 430))
 
-
-def success():
-    pass
-
-
-class Board:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.board = []
-        self.left = 10
-        self.top = 10
-        self.cell_size = 100
-
-    def set_view(self, left, top, cell_size):
-        self.left = left
-        self.top = top
-        self.cell_size = cell_size
-
-    def get_cell(self, x, y):
-        if x < self.left or y < self.top:
-            return None
-
-        elif x > self.cell_size * self.width + self.left or y > self.cell_size * self.height + self.top:
-            return None
-
-        else:
-            for i in range(self.height):
-                for j in range(self.width):
-                    if self.cell_size * j + self.left <= x <= self.cell_size * (j + 1) + self.left:
-                        if self.cell_size * i + self.top <= y <= self.cell_size * (i + 1) + self.top:
-                            return j, i
-
-            for i in range(self.height):
-                for j in range(self.width):
-                    if self.cell_size * j + self.left <= x <= self.cell_size * (j + 1) + self.left:
-                        if self.cell_size * i + self.top <= y <= self.cell_size * (i + 1) + self.top:
-                            return j, i
-
-    def find_distanse(self, cell, x, y):
-        return ((self.cell_size * (cell[0] + 0.5) - x) ** 2 + (self.cell_size * (cell[1] + 0.5) - y) ** 2) ** 0.5
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                start(lvl_num=lvl_num + 1)
+        pygame.display.flip()
 
 
 def start_screen():
@@ -142,7 +116,7 @@ def start_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if 650 >= x >= 350 >= y >= 250:
-                    return start()
+                    return start(lvl_num=1)
                 elif 350 <= x <= 650 and 360 <= y <= 460:
                     return rules()
                 elif 350 <= x <= 650 and 470 <= y <= 570:
@@ -153,10 +127,13 @@ def start_screen():
 
 def start(lvl_num=1):
     if lvl_num == 1:
-        level = Level('level1.txt', 465, 315, None)
-        print(level.board)
-        print(level.player.rect)
+        level = Level('level1.txt', 660, 310, 1)
         level.play(screen)
+    elif lvl_num == 2:
+        level = Level('level2.txt', 680, 780, 2)
+        level.play(screen)
+    else:
+        return start_screen()
 
 
 def rules():
@@ -205,19 +182,93 @@ def rules():
 
 
 def choose_level():
-    pass
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+
+    pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 250, 300, 100), width=3)
+    font = pygame.font.Font(None, 70)
+    text1 = font.render('Уровень 1', True, (150, 150, 150))
+    screen.blit(text1, (390, 280))
+    pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 360, 300, 100), width=3)
+    text2 = font.render('Уровень 2', True, (150, 150, 150))
+    screen.blit(text2, (390, 390))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEMOTION:
+                x, y = event.pos
+                if 650 >= x >= 350 >= y >= 250:
+                    pygame.draw.rect(screen, pygame.Color((250, 250, 250)), (350, 250, 300, 100), width=3)
+                    new_text1 = font.render('Уровень 1', True, (250, 250, 250))
+                    screen.blit(new_text1, (390, 280))
+                    pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 360, 300, 100), width=3)
+                    screen.blit(text2, (390, 390))
+
+                elif 350 <= x <= 650 and 360 <= y <= 460:
+                    pygame.draw.rect(screen, pygame.Color((250, 250, 250)), (350, 360, 300, 100), width=3)
+                    new_text2 = font.render('Уровень 2', True, (250, 250, 250))
+                    screen.blit(new_text2, (390, 390))
+                    pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 250, 300, 100), width=3)
+                    screen.blit(text1, (390, 280))
+
+                else:
+                    pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 250, 300, 100), width=3)
+                    screen.blit(text1, (390, 280))
+                    pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 360, 300, 100), width=3)
+                    screen.blit(text2, (390, 390))
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 650 >= x >= 350 >= y >= 250:
+                    return start(lvl_num=1)
+                elif 350 <= x <= 650 and 360 <= y <= 460:
+                    return start(lvl_num=2)
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
-# class Tile(pygame.sprite.Sprite):
-#     def __init__(self, tile_type, pos_x, pos_y):
-#         super().__init__(tiles_group, all_sprites)
-#         self.image = tile_images[tile_type]
-#         self.rect = self.image.get_rect().move(
-#             tile_width * pos_x, tile_height * pos_y)
+class Board:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.board = []
+        self.left = 10
+        self.top = 10
+        self.cell_size = 100
+
+    def set_view(self, left, top, cell_size):
+        self.left = left
+        self.top = top
+        self.cell_size = cell_size
+
+    def get_cell(self, x, y):
+        if x < self.left or y < self.top:
+            return None
+
+        elif x > self.cell_size * self.width + self.left or y > self.cell_size * self.height + self.top:
+            return None
+
+        else:
+            for i in range(self.height):
+                for j in range(self.width):
+                    if self.cell_size * j + self.left <= x <= self.cell_size * (j + 1) + self.left:
+                        if self.cell_size * i + self.top <= y <= self.cell_size * (i + 1) + self.top:
+                            return j, i
+
+            for i in range(self.height):
+                for j in range(self.width):
+                    if self.cell_size * j + self.left <= x <= self.cell_size * (j + 1) + self.left:
+                        if self.cell_size * i + self.top <= y <= self.cell_size * (i + 1) + self.top:
+                            return j, i
+
+    def find_distanse(self, cell, x, y):
+        return ((self.cell_size * (cell[0] + 0.5) - x) ** 2 + (self.cell_size * (cell[1] + 0.5) - y) ** 2) ** 0.5
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self):
         super().__init__(all_sprites)
         self.v = 5
         self.frames = []
@@ -257,24 +308,22 @@ class Camera:
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
 
-class Coin:
-    pass
-
-
 class Level(Board):
-    def __init__(self, filename, start_x, start_y, time):
+    def __init__(self, filename, start_x, start_y, lvl_num):
+        all_sprites.empty()
         self.board = load_level(filename)
-        self.player = Player(start_x, start_y)
+        self.player = Player()
         self.player.rect = self.player.image.get_rect()
         self.player.rect.x, self.player.rect.y = start_x, start_y
         self.camera = Camera(start_x, start_y)
         self.camera.update(self.player)
-        self.time = time
+        self.lvl_num = lvl_num
         super().__init__(len(self.board[0]), len(self.board))
         self.board = load_level(filename)
-        self.rad = 300
+        self.rad = 200
         self.al = []
         print(self.board)
+        self.coins = 0
 
     def check_if_available(self, side):
         self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
@@ -343,15 +392,33 @@ class Level(Board):
         a_pushed = False
         s_pushed = False
         d_pushed = False
+        fl = pygame.transform.scale(load_image('floor1.png'), (self.cell_size, self.cell_size))
+        cr = pygame.transform.scale(load_image('cristall.png'), (self.cell_size, self.cell_size))
+        coin = pygame.transform.scale(load_image('coin.png'), (self.cell_size, self.cell_size))
+        font = pygame.font.Font(None, 30)
+        text = font.render('Назад', True, (150, 150, 150))
+        new_text = font.render('Назад', True, (250, 250, 250))
+        back_col = 0
+
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print(self.al)
                     terminate()
                 elif event.type == pygame.MOUSEMOTION:
-                    pass
+                    x, y = event.pos
+                    if 850 <= x <= 990 and 10 <= y <= 60:
+                        back_col = 1
+                        pygame.draw.rect(screen, pygame.Color((250, 250, 250)), (850, 10, 140, 50), width=3)
+                        screen.blit(new_text, (890, 27))
+                    else:
+                        back_col = 0
+                        pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (850, 10, 140, 50), width=3)
+                        screen.blit(text, (890, 27))
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    pass
+                    x, y = event.pos
+                    if 850 <= x <= 990 and 10 <= y <= 60:
+                        return start_screen()
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_w:
@@ -396,24 +463,48 @@ class Level(Board):
 
             self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
                                              self.player.rect.y + 0.5 * self.player.rect.h)
+            if self.player.cell:
+                if 'cr' in self.board[self.player.cell[1]][self.player.cell[0]]:
+                    self.board[self.player.cell[1]][self.player.cell[0]] = \
+                        ''.join(self.board[self.player.cell[1]][self.player.cell[0]].split('cr'))
+                    self.rad += 40
+                if 'coin' in self.board[self.player.cell[1]][self.player.cell[0]]:
+                    self.board[self.player.cell[1]][self.player.cell[0]] = \
+                        ''.join(self.board[self.player.cell[1]][self.player.cell[0]].split('coin'))
+                    self.coins += 1
+            else:
+                return success(self.coins, self.lvl_num)
             self.camera.update(self.player)
-            print(self.camera.dx, self.camera.dy)
+            self.screen.fill(pygame.Color(50, 50, 50))
 
-            fl = pygame.transform.scale(load_image('floor1.png'), (self.cell_size, self.cell_size))
-            self.screen.fill(pygame.Color(0, 0, 0))
+            if back_col == 0:
+                pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (850, 10, 140, 50), width=3)
+                screen.blit(text, (890, 27))
+            elif back_col == 1:
+                pygame.draw.rect(screen, pygame.Color((250, 250, 250)), (850, 10, 140, 50), width=3)
+                screen.blit(new_text, (890, 27))
+
+
+
             for i in range(len(self.board[0])):
                 for j in range(len(self.board)):
                     if self.find_distanse((i, j), self.player.rect.x + 0.5 * self.player.rect.w,
                                           self.player.rect.y + 0.5 * self.player.rect.h) <= self.rad:
                         self.screen.blit(fl, (self.cell_size * i + self.left + self.camera.dx,
                                               self.cell_size * j + self.top + self.camera.dy))
+                        if 'cr' in self.board[j][i]:
+                            self.screen.blit(cr, (self.cell_size * i + self.left + self.camera.dx,
+                                                  self.cell_size * j + self.top + self.camera.dy))
+                        elif 'coin' in self.board[j][i]:
+                            self.screen.blit(coin, (self.cell_size * i + self.left + self.camera.dx,
+                                                    self.cell_size * j + self.top + self.camera.dy))
 
             for i in range(len(self.board[0])):
                 for j in range(len(self.board)):
                     if self.find_distanse((i, j), self.player.rect.x + 0.5 * self.player.rect.w,
                                           self.player.rect.y + 0.5 * self.player.rect.h) <= self.rad:
                         if '2' in self.board[j][i]:
-                            pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
+                            pygame.draw.line(self.screen, pygame.Color((0, 50, 250)),
                                              (self.cell_size * i + self.left + self.camera.dx,
                                               self.cell_size * (j + 1) + self.top + self.camera.dy),
                                              (self.cell_size * (i + 1) + self.left + self.camera.dx,
@@ -428,7 +519,7 @@ class Level(Board):
                                                 self.cell_size * (j + 1) + self.top))
 
                         if '6' in self.board[j][i]:
-                            pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
+                            pygame.draw.line(self.screen, pygame.Color((0, 50, 250)),
                                              (self.cell_size * (i + 1) + self.left + self.camera.dx,
                                               self.cell_size * j + self.top + self.camera.dy),
                                              (self.cell_size * (i + 1) + self.left + self.camera.dx,
@@ -443,7 +534,7 @@ class Level(Board):
                                                 self.cell_size * (j + 1) + self.top))
 
                         if '4' in self.board[j][i]:
-                            pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
+                            pygame.draw.line(self.screen, pygame.Color((0, 50, 250)),
                                              (self.cell_size * i + self.left + self.camera.dx,
                                               self.cell_size * j + self.top + self.camera.dy),
                                              (self.cell_size * i + self.left + self.camera.dx,
@@ -455,7 +546,7 @@ class Level(Board):
                                                 self.cell_size * i + self.left, self.cell_size * (j + 1) + self.top))
 
                         if '8' in self.board[j][i]:
-                            pygame.draw.line(self.screen, pygame.Color((250, 50, 250)),
+                            pygame.draw.line(self.screen, pygame.Color((0, 50, 250)),
                                              (self.cell_size * i + self.left + self.camera.dx,
                                               self.cell_size * j + self.top + self.camera.dy),
                                              (self.cell_size * (i + 1) + self.left + self.camera.dx,
