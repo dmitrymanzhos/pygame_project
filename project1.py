@@ -1,8 +1,7 @@
 import os
-import sys
 import pygame
 
-pygame.init()
+pygame.init()  # начальная инициализация
 size = WIDTH, HEIGHT = 1000, 700
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
@@ -10,16 +9,16 @@ FPS = 60
 all_sprites = pygame.sprite.Group()
 
 
-def terminate():
+def terminate():  # выход
     pygame.quit()
-    sys.exit()
+    exit()
 
 
-def load_image(name, colorkey=None):
+def load_image(name, colorkey=None):  # загрузка изображений
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
+        exit()
     image = pygame.image.load(fullname)
 
     if colorkey is not None:
@@ -32,14 +31,14 @@ def load_image(name, colorkey=None):
     return image
 
 
-def load_level(filename):
+def load_level(filename):  # загрузка уровня из файла
     filename = "data/" + filename
     with open(filename, 'r') as mapFile:
         level_map = [line.strip().split('|') for line in mapFile]
     return level_map
 
 
-def success(coins, lvl_num):
+def success(coins, lvl_num):  # финальное окно
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 70)
@@ -49,7 +48,6 @@ def success(coins, lvl_num):
     screen.blit(text2, (200, 200))
     text3 = font.render('Нажмите в любом месте', True, (200, 200, 200))
     screen.blit(text3, (200, 430))
-
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -59,10 +57,9 @@ def success(coins, lvl_num):
         pygame.display.flip()
 
 
-def start_screen():
+def start_screen():  # начальный экран
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-
     pygame.draw.rect(screen, pygame.Color((150, 150, 150)), (350, 250, 300, 100), width=3)
     font = pygame.font.Font(None, 70)
     text1 = font.render('Начать', True, (150, 150, 150))
@@ -125,9 +122,9 @@ def start_screen():
         clock.tick(FPS)
 
 
-def start(lvl_num=1):
+def start(lvl_num=1):  # запуск уровня
     if lvl_num == 1:
-        level = Level('level1.txt', 660, 310, 1)
+        level = Level('level1.txt', 370, 470, 1)
         level.play(screen)
     elif lvl_num == 2:
         level = Level('level2.txt', 680, 780, 2)
@@ -136,11 +133,11 @@ def start(lvl_num=1):
         return start_screen()
 
 
-def rules():
+def rules():  # окно с правилами
     intro_text = ["ПРАВИЛА ИГРЫ", "",
                   "Вы находитесь в лабиринте. Цель игры - найти выход, собрав как можно больше монет.",
-                  "",
-                  ""]
+                  "Собранные кристаллы увеличивают область видимости",
+                  "Управление с помощью WASD"]
 
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
@@ -181,7 +178,7 @@ def rules():
         clock.tick(FPS)
 
 
-def choose_level():
+def choose_level():  # окно выбора уровня
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
 
@@ -229,7 +226,7 @@ def choose_level():
         clock.tick(FPS)
 
 
-class Board:
+class Board:  # класс поля
     def __init__(self, width, height):
         self.width = width
         self.height = height
@@ -243,7 +240,7 @@ class Board:
         self.top = top
         self.cell_size = cell_size
 
-    def get_cell(self, x, y):
+    def get_cell(self, x, y):  # получение клетки, в которой находится точка
         if x < self.left or y < self.top:
             return None
 
@@ -263,21 +260,20 @@ class Board:
                         if self.cell_size * i + self.top <= y <= self.cell_size * (i + 1) + self.top:
                             return j, i
 
-    def find_distanse(self, cell, x, y):
+    def find_distanse(self, cell, x, y):  # нахождение расстояния от центра клетки до точки
         return ((self.cell_size * (cell[0] + 0.5) - x) ** 2 + (self.cell_size * (cell[1] + 0.5) - y) ** 2) ** 0.5
 
 
-class Player(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite):  # класс персонажа
     def __init__(self):
         super().__init__(all_sprites)
         self.v = 5
         self.frames = []
         self.cut_sheet(pygame.transform.scale(load_image('player1.png', colorkey=-1), (300, 400)), 3, 4)
-        self.cur_frame = 1
-        self.image = pygame.transform.scale(self.frames[self.cur_frame], (70, 70))
+        self.image = pygame.transform.scale(self.frames[1], (70, 70))
         self.rect = self.rect.move(100, 100)
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self, sheet, columns, rows):  # разрезание png персонажа на части
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
                                 sheet.get_height() // rows)
         for j in range(rows):
@@ -286,16 +282,16 @@ class Player(pygame.sprite.Sprite):
                 self.frames.append(sheet.subsurface(pygame.Rect(
                     frame_location, self.rect.size)))
 
-    def update(self):
+    def update(self):  # изменение размера изображения персонажа
         self.image = pygame.transform.scale(self.image, (70, 70))
 
 
-class Camera:
+class Camera:  # класс камеры
     def __init__(self, dx, dy):
         self.dx = dx
         self.dy = dy
 
-    def apply(self, obj, plus_or_min=0):
+    def apply(self, obj, plus_or_min=0):  # смещение персонажа для отрисовки
         if plus_or_min == 0:
             obj.rect.x += self.dx
             obj.rect.y += self.dy
@@ -303,12 +299,12 @@ class Camera:
             obj.rect.x -= self.dx
             obj.rect.y -= self.dy
 
-    def update(self, target):
+    def update(self, target):  # обновление смещения
         self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
 
-class Level(Board):
+class Level(Board):  # класс уровня
     def __init__(self, filename, start_x, start_y, lvl_num):
         all_sprites.empty()
         self.board = load_level(filename)
@@ -325,7 +321,7 @@ class Level(Board):
         print(self.board)
         self.coins = 0
 
-    def check_if_available(self, side):
+    def check_if_available(self, side):  # проверка возможности перемещения персонажа
         self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
                                          self.player.rect.y + 0.5 * self.player.rect.h)
         if self.player.cell:
@@ -380,7 +376,7 @@ class Level(Board):
                                 return False
         return True
 
-    def play(self, screen):
+    def play(self, screen):  # запуск уровня
         self.screen = screen
         self.player.cell = self.get_cell(self.player.rect.x + 0.5 * self.player.rect.w,
                                          self.player.rect.y + 0.5 * self.player.rect.h)
@@ -400,7 +396,7 @@ class Level(Board):
         new_text = font.render('Назад', True, (250, 250, 250))
         back_col = 0
 
-        while running:
+        while running:  # основной угровой цикл
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     print(self.al)
@@ -439,7 +435,7 @@ class Level(Board):
                         s_pushed = False
                     elif event.key == pygame.K_d:
                         d_pushed = False
-
+            # перемещение персонажа
             if w_pushed:
                 if self.check_if_available('8'):
                     self.player.rect.y -= self.player.v
@@ -483,8 +479,6 @@ class Level(Board):
             elif back_col == 1:
                 pygame.draw.rect(screen, pygame.Color((250, 250, 250)), (850, 10, 140, 50), width=3)
                 screen.blit(new_text, (890, 27))
-
-
 
             for i in range(len(self.board[0])):
                 for j in range(len(self.board)):
